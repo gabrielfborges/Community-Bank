@@ -1,30 +1,14 @@
 import express from "express";
-
-type Account = {
-  id: string;
-  nome: string;
-  saldo: number;
-};
-
-const accounts: Account[] = [
-  {
-    id: "acc-001",
-    nome: "Ana Souza",
-    saldo: 850.5
-  },
-  {
-    id: "acc-002",
-    nome: "Cláudio Santos",
-    saldo: 3200
-  },
-  {
-    id: "acc-003",
-    nome: "João Oliveira",
-    saldo: 120
-  }
-];
+import { AccountController } from "./controllers/accountController.js";
+import { InMemoryAccountRepository } from "./repositories/accountRepository.js";
+import { createAccountRoutes } from "./routes/accountRoutes.js";
+import { AccountService } from "./services/accountService.js";
 
 export const app = express();
+
+const accountRepository = new InMemoryAccountRepository();
+const accountService = new AccountService(accountRepository);
+const accountController = new AccountController(accountService);
 
 app.use(express.json());
 
@@ -40,6 +24,4 @@ app.get("/health", (_request, response) => {
   });
 });
 
-app.get("/accounts", (_request, response) => {
-  return response.status(200).json(accounts);
-});
+app.use("/accounts", createAccountRoutes(accountController));
